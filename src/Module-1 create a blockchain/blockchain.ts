@@ -1,5 +1,7 @@
-import { SHA256 } from "crypto-js"; // You'll need to install crypto-js
+import express from "express";
+import { SHA256 } from "crypto-js";
 
+const app = express();
 interface Block {
   index: number;
   timestamp: string;
@@ -8,7 +10,7 @@ interface Block {
 }
 
 class Blockchain {
-  private chain: Block[];
+  public chain: Block[];
 
   constructor() {
     this.chain = [];
@@ -62,8 +64,9 @@ class Blockchain {
         return false;
       }
 
-      const previous_proof = previous_block.proof;
       const proof = block.proof;
+      const previous_proof = previous_block.proof;
+
       const hash_operation = SHA256(
         (proof ** 2 - previous_proof ** 2).toString()
       ).toString();
@@ -78,3 +81,51 @@ class Blockchain {
     return true;
   }
 }
+
+const blockchain = new Blockchain();
+
+app.get("/", (req, res) => {
+  res.json({
+    message: "hello from port 3000",
+  });
+});
+
+app.get("/mine_block", (req, res) => {
+  const previous_block = blockchain.getPreviousBlock();
+  const previous_proof = previous_block.proof;
+  const proof = blockchain.proofOfWork(previous_proof);
+  const previous_hash = blockchain.hash(previous_block);
+  const block = blockchain.createBlock(proof, previous_hash);
+  res
+    .json({
+      message: "Congratulations, you just mined a block!",
+      index: block.index,
+      timestamp: block.timestamp,
+      proof: block.proof,
+      previous_hash: block.previous_hash,
+    })
+    .status(200);
+});
+
+app.get("/get_block", (req, res) => {
+  res.json({
+    chain: blockchain.chain,
+    length: blockchain.chain.length,
+  });
+});
+
+app.get("/is_valid", (req, res) => {
+  const is_valid = blockchain.isChainValid(blockchain.chain);
+  if (is_valid) {
+    res.json({
+      message: "all good.The blockchain is valid",
+    });
+  } else {
+    res.json({
+      message: "Houston, we have a problem",
+    });
+  }
+});
+app.listen(3000, () => {
+  console.log("server is running on port 3000");
+});
