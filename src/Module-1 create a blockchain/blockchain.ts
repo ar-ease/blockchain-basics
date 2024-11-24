@@ -38,7 +38,7 @@ class Blockchain {
 
     while (!check_proof) {
       const hash_operation = SHA256(
-        (new_proof ** 2 - previous_proof ** 2).toString()
+        (new_proof ** 2 - previous_proof ** 2).toString(),
       ).toString();
       if (hash_operation.substring(0, 4) === "0000") {
         check_proof = true;
@@ -68,7 +68,7 @@ class Blockchain {
       const previous_proof = previous_block.proof;
 
       const hash_operation = SHA256(
-        (proof ** 2 - previous_proof ** 2).toString()
+        (proof ** 2 - previous_proof ** 2).toString(),
       ).toString();
 
       if (hash_operation.substring(0, 4) !== "0000") {
