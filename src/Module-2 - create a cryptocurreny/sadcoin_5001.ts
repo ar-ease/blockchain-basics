@@ -144,7 +144,7 @@ app.get("/mine_block", (_req, res) => {
   const previous_proof = previous_block.proof;
   const proof = blockchain.proofOfWork(previous_proof);
   const previous_hash = blockchain.hash(previous_block);
-  blockchain.addTransaction(node_address, "ar-ease", 1);
+  blockchain.addTransaction(node_address, "kenny", 1);
   const block = blockchain.createBlock(proof, previous_hash);
   res
     .status(200)
@@ -217,6 +217,6 @@ app.get("/replace_chain", async (_req, res) => {
     });
   }
 });
-app.listen(3000, () => {
-  console.log("server is running on port 3000");
+app.listen(5001, () => {
+  console.log("server is running on port 5001");
 });
