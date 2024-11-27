@@ -1,8 +1,6 @@
 //module 2 - creating a cryptocurrency
-import express from "express";
 import { SHA256 } from "crypto-js";
 
-const app = express();
 interface Block {
   index: number;
   timestamp: string;
@@ -126,19 +124,27 @@ class Blockchain {
   }
 }
 
+import express from "express";
+const app = express();
+import { v4 as uuidv4 } from "uuid";
+
+//creating an adress fot the node on port 3000
+const node_address = uuidv4().replace(/-/g, "");
+
 const blockchain = new Blockchain();
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.json({
     message: "hello from port 3000",
   });
 });
 
-app.get("/mine_block", (req, res) => {
+app.get("/mine_block", (_req, res) => {
   const previous_block = blockchain.getPreviousBlock();
   const previous_proof = previous_block.proof;
   const proof = blockchain.proofOfWork(previous_proof);
   const previous_hash = blockchain.hash(previous_block);
+  const new_transaction = blockchain.addTransaction(node_address, "ar-ease", 1);
   const block = blockchain.createBlock(proof, previous_hash);
   res
     .json({
@@ -147,18 +153,19 @@ app.get("/mine_block", (req, res) => {
       timestamp: block.timestamp,
       proof: block.proof,
       previous_hash: block.previous_hash,
+      transactions: block.transactions,
     })
     .status(200);
 });
 
-app.get("/get_block", (req, res) => {
+app.get("/get_block", (_req, res) => {
   res.json({
     chain: blockchain.chain,
     length: blockchain.chain.length,
   });
 });
 
-app.get("/is_valid", (req, res) => {
+app.get("/is_valid", (_req, res) => {
   const is_valid = blockchain.isChainValid(blockchain.chain);
   if (is_valid) {
     res.json({
@@ -169,6 +176,20 @@ app.get("/is_valid", (req, res) => {
       message: "Houston, we have a problem",
     });
   }
+});
+app.post("/add_transaction", (req, res) => {
+  const { transaction } = req.body;
+  if (!transaction.sender || !transaction.receiver || !transaction.amount) {
+    res.status(400).json({ message: "invalid transaction data" });
+  }
+  const block_index = blockchain.addTransaction(
+    transaction.sender,
+    transaction.receiver,
+    transaction.amount,
+  );
+  res.json({
+    message: `This transaction will be added to block ${block_index}`,
+  });
 });
 app.listen(3000, () => {
   console.log("server is running on port 3000");
