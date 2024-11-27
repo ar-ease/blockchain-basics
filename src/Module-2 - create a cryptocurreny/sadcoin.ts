@@ -8,13 +8,20 @@ interface Block {
   timestamp: string;
   proof: number;
   previous_hash: string;
+  transactions: any[];
+  nodes: Set<any>;
 }
 
 class Blockchain {
   public chain: Block[];
+  public transactions: any[];
+  public nodes: Set<any>;
 
   constructor() {
     this.chain = [];
+    this.transactions = [];
+
+    this.nodes = new Set();
     this.createBlock(1, "0");
   }
 
@@ -24,6 +31,8 @@ class Blockchain {
       timestamp: new Date().toString(),
       proof,
       previous_hash,
+      transactions: this.transactions,
+      nodes: this.nodes,
     };
     this.chain.push(block);
     return block;
@@ -80,6 +89,40 @@ class Blockchain {
       block_index += 1;
     }
     return true;
+  }
+  addTransaction(sender: string, receiver: string, amount: number) {
+    this.transactions.push({
+      sender,
+      receiver,
+      amount,
+    });
+    const previous_block = this.getPreviousBlock();
+    return previous_block["index"] + 1;
+  }
+  addNode(address: string) {
+    this.nodes.add(new URL(address));
+  }
+  replaceChain() {
+    const network = this.nodes;
+    let longest_chain = null;
+    let max_length = this.chain.length;
+
+    network.forEach(async (node) => {
+      const response = await fetch(`http://${node}/get_block`);
+      const data = await response.json();
+      const length = data.length;
+      const chain = data.chain;
+      if (length > max_length && this.isChainValid(chain)) {
+        max_length = length;
+        longest_chain = chain;
+      }
+    });
+
+    if (longest_chain) {
+      this.chain = longest_chain;
+      return true;
+    }
+    return false;
   }
 }
 
