@@ -98,7 +98,12 @@ class Blockchain {
     return previous_block["index"] + 1;
   }
   addNode(address: string) {
-    this.nodes.add(new URL(address));
+    try {
+      const url = new URL(`http://${address}`);
+      this.nodes.add(url.host); // Just using host since that's what you need in fetch
+    } catch (error) {
+      throw new Error(`Invalid node address: ${address}`);
+    }
   }
   replaceChain() {
     const network = this.nodes;
@@ -126,6 +131,7 @@ class Blockchain {
 
 import express from "express";
 const app = express();
+app.use(express.json());
 import { v4 as uuidv4 } from "uuid";
 
 //creating an adress fot the node on port 3000
@@ -135,7 +141,7 @@ const blockchain = new Blockchain();
 
 app.get("/", (_req, res) => {
   res.json({
-    message: "hello from port 3000",
+    message: "hello from port 5001",
   });
 });
 
@@ -194,6 +200,8 @@ app.post("/add_transaction", (req, res) => {
 });
 app.post("/connect_node", (req, res) => {
   const { node } = req.body;
+  console.log("this is the node" + node);
+
   if (!node) {
     res.status(400).json({ message: "invalid node data" });
   }
