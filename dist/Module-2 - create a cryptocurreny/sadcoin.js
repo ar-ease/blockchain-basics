@@ -151,7 +151,7 @@ app.get("/is_valid", (_req, res) => {
     }
     else {
         res.json({
-            message: "ar-ease, we have a problem",
+            message: "ar-eaae, we have a problem",
         });
     }
 });
@@ -171,7 +171,7 @@ app.post("/connect_node", (req, res) => {
         res.status(400).json({ message: "invalid node data" });
     }
     blockchain.addNode(node);
-    res.status(200).json({
+    res.json({
         message: "All the nodes are now connected",
         total_nodes: Array.from(blockchain.nodes),
     });

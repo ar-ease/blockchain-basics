@@ -134,7 +134,6 @@ const app = express();
 app.use(express.json());
 import { v4 as uuidv4 } from "uuid";
 
-//creating an adress fot the node on port 3000
 const node_address = uuidv4().replace(/-/g, "");
 
 const blockchain = new Blockchain();
